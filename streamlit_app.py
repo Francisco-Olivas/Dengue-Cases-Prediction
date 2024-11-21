@@ -29,8 +29,11 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         return X_temp
 
 # Cargar el modelo y el pipeline
-#model = joblib.load("mlp (2).pkl")
-#pipeline = joblib.load("pipeline (2).joblib")
+pipeline_class = joblib.load("pipeline_classification.joblib")
+forest_class=joblib.load("rf_class.pkl")
+forest = joblib.load("forest.pkl")
+voting = joblib.load("voting.pkl")
+tree = joblib.load("tree.pkl")
 
 # Título de la aplicación
 st.markdown(
@@ -112,12 +115,19 @@ input_data = pd.DataFrame({
 })
 
 # Transformar los datos utilizando el pipeline
-#input_data_prepared = pipeline.transform(input_data)
-models={"Random Forest":1, "VotingClassifier":2, "SVR":3}
+input_data_prepared = pipeline_class.transform(input_data)
+models={"Random Forest Classification": forest_class,"Random Forest Regression":forest, "Voting Regression":voting, "Decision Tree Regression":tree}
 model_option = st.selectbox("Selecciona el modelo para hacer predicciones:", list(models.keys()))
 
 # Botón para hacer predicción
 if st.button("Realizar Predicción"):
     model = models[model_option]
-    prediction = model.predict(input_data_prepared)
-    st.success(f"La predicción de casos es: {prediction[0]}")
+    if model == forest_class:
+        prediction = model.predict(input_data_prepared)
+        if prediction == 1:
+            st.success(f"Hay brote de dengue")
+        if prediction == 0:
+            st.success(f"No hay brote de dengue")    
+    else:
+        prediction = model.predict(input_data_prepared)
+        st.success(f"La predicción de casos es: {prediction[0]}")
